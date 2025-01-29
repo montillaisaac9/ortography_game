@@ -20,12 +20,12 @@ model Game {
 model Score {
   id        Int      @id @default(autoincrement())
   score     Int
-  userId    Int
+  emailUser String
   gameId    Int
   createdAt DateTime @default(now())
   updatedAt DateTime
   Game      Game     @relation(fields: [gameId], references: [id])
-  User      User     @relation(fields: [userId], references: [id])
+  User      User     @relation(fields: [emailUser], references: [email])
 }
 
 model User {

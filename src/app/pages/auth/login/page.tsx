@@ -34,7 +34,7 @@ export default function Login() {
       const data = await res.json();
       if (res.ok) {
         setSuccess(true);
-        router.push('/dashboard'); // Redirige al dashboard o a la página principal
+        router.push('/pages/home'); // Redirige al dashboard o a la página principal
       } else {
         setError(data.message || 'Error al iniciar sesión');
       }

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear el token de sesión (puedes usar JWT o cualquier otra solución de autenticación)
-    const sessionToken = 'token_generado_o_jwt';  // Generar el token (puedes usar una librería como jsonwebtoken)
+    const sessionToken = email;  // Generar el token (puedes usar una librería como jsonwebtoken)
 
     // Crear la respuesta para el login
     const response = NextResponse.json(
