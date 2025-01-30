@@ -35,7 +35,7 @@ export async function POST(request: Request) {
           data: { score: newScore, updatedAt: new Date() },
         });
       } else {
-        return NextResponse.json({ message: 'La puntuación anterior es mayor o igual a la nueva' }, { status: 400 });
+        return NextResponse.json({ message: 'La puntuación anterior es mayor o igual a la nueva' }, { status: 200 });
       }
     } else {
       score = await prisma.score.create({

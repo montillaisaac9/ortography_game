@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react";
+import { set } from "zod";
 
 // Definición de las palabras
 const palabras = [
@@ -60,24 +61,82 @@ export default function CompletacionGame() {
   const [puntuacion, setPuntuacion] = useState(0);
   const [mensaje, setMensaje] = useState("");
   const [indice, setIndice] = useState<number | null>(null);
-  const [titulo, setTitulo] = useState<string>("");
-  const [descripcion, setDescripcion] = useState<string>("");
-  const [reglas, setReglas] = useState<string>("");
+  const [mostrarPalabra, setMostrarPalabra] = useState(false);
+  const [titulo, setTitulo] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [reglas, setReglas] = useState("");
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(false);
+  const [countReload, setcountReolad] = useState<number | null >(null);
 
   useEffect(() => {
-    // Obtener detalles del juego desde la API
-    fetch('/api/juego/1')
-      .then((res) => res.json())
-      .then((data) => {
-        setTitulo(data.titulo);
-        setDescripcion(data.descripcion);
-        setReglas(data.reglas);
-      })
-      .catch((error) => console.error("Error al obtener detalles:", error));
-
-    // Seleccionar una palabra aleatoria
     setIndice(Math.floor(Math.random() * palabras.length));
   }, []);
+
+  useEffect(() => {
+    const obtenerDetallesDelJuego = async () => {
+      setCargando(true);
+      setError(false);
+      
+      try {
+        const res = await fetch('/api/home/games?id=1');
+        if (!res.ok) throw new Error("Error al obtener los detalles del juego");
+
+        const data = await res.json();
+        console.log(data)
+        setTitulo(data.game.name || "Título no disponible");
+        setDescripcion(data.game.description || "Descripción no disponible");
+        setReglas(data.game.rules || "Reglas no disponibles");
+      } catch (error) {
+        console.error("Error al obtener detalles:", error);
+        setError(true);
+      } finally {
+        setCargando(false);
+      }
+    };
+
+    obtenerDetallesDelJuego();
+    setIndice(Math.floor(Math.random() * palabras.length));
+  }, []);
+
+  if (cargando) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen w-screen gap-4">
+        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-lg">Cargando...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen w-screen gap-4">
+        <p className="text-red-500 text-lg font-bold">Error al cargar el juego</p>
+        <button
+          onClick={() => location.reload()}
+          className="bg-red-500 text-white px-4 py-2 rounded-md"
+        >
+          Reintentar
+        </button>
+      </div>
+    );
+  }
+
+  const enviarPuntuacion = async (puntos: number): Promise<void> => {
+    try {
+      const response = await fetch('/api/home/games/points', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameId: 1, newScore: puntos }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error en la petición: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Error al enviar puntuación:", error);
+    }
+  };
 
   if (indice === null) return <div>Cargando...</div>;
 
@@ -85,43 +144,48 @@ export default function CompletacionGame() {
   const pista = palabras[indice].pista;
   const palabraOculta = palabraActual.replace(/[a-zA-Z]/g, "_");
 
-  const enviarPuntuacion = async (puntos: number) => {
-    try {
-      await fetch('/api/home/games/points', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: 1, newScore: puntos }),
-      });
-    } catch (error) {
-      console.error("Error al enviar puntuación:", error);
-    }
-  };
-
   const verificarRespuesta = () => {
     if (entrada.toLowerCase() === palabraActual.toLowerCase()) {
-      const nuevaPuntuacion = puntuacion + 20;
-      setPuntuacion(nuevaPuntuacion);
-      setMensaje(`¡Correcto! +20 puntos. Total: ${nuevaPuntuacion} pts`);
-
-      if (nuevaPuntuacion >= 100) {
-        enviarPuntuacion(nuevaPuntuacion);
-        setMensaje("¡Felicidades! Has alcanzado 100 puntos.");
-      } else {
+    const nuevaPuntuacion = puntuacion + 20
+    setPuntuacion(nuevaPuntuacion);
+    if (nuevaPuntuacion >= 100) {
+    setMensaje(`🎉 ¡Felicidades! ¡Has completado el juego!`);
+    setIntentos(0)
+    return enviarPuntuacion(nuevaPuntuacion); // Enviar puntuación cuando llega a 100
+    }  
+    setPuntuacion(nuevaPuntuacion);
+      setMensaje(`✅ ¡Correcto! +20 puntos.`);
+      setTimeout(() => {
+        setIndice(Math.floor(Math.random() * palabras.length));
+        setIntentos(3);
+        setEntrada("");
+        setMensaje("");
+      }, 1000);
+    } else {
+      const intentosRestantes = intentos - 1;
+      setIntentos(intentosRestantes);
+      setMensaje(`❌ Incorrecto. Intentos restantes: ${intentosRestantes}`);
+  
+      if (intentosRestantes === 0) {
+        setMostrarPalabra(true);
+        setMensaje(`❌ Game Over. La palabra era: ${palabraActual}`);
+        enviarPuntuacion(puntuacion)
+        // Iniciar cuenta regresiva de 3 segundos antes de reiniciar el juego
+        setcountReolad(3);
+        const countdown = setInterval(() => {
+          setcountReolad((prev) => (prev !== null && prev > 0 ? prev - 1 : null));
+        }, 1000);
+  
         setTimeout(() => {
+          clearInterval(countdown); // Detener el intervalo
           setIndice(Math.floor(Math.random() * palabras.length));
           setIntentos(3);
           setEntrada("");
           setMensaje("");
-        }, 1000);
-      }
-    } else {
-      const intentosRestantes = intentos - 1;
-      setIntentos(intentosRestantes);
-      setMensaje(`Incorrecto. Intentos restantes: ${intentosRestantes}`);
-
-      if (intentosRestantes === 0) {
-        enviarPuntuacion(puntuacion);
-        setMensaje("Game Over. Puntuación final enviada.");
+          setMostrarPalabra(false);
+          setPuntuacion(0);
+          setcountReolad(null);
+        }, 3000);
       }
     }
   };
@@ -131,15 +195,19 @@ export default function CompletacionGame() {
       <h1 className="text-xl font-bold">{titulo}</h1>
       <p className="text-lg">{descripcion}</p>
       <p className="text-md">{reglas}</p>
-      <h2 className="text-xl font-bold">Juego de Completación</h2>
+      <h2 className="text-xl font-bold">Pista</h2>
       <p className="text-lg">{pista}</p>
-      <p className="text-2xl tracking-wider">{palabraOculta}</p>
+      <p className="text-2xl tracking-wider">
+        {mostrarPalabra ? palabraActual : palabraOculta}
+      </p>
+
       <input
         type="text"
         value={entrada}
         onChange={(e) => setEntrada(e.target.value)}
-        className="border p-2 rounded-md"
+        className="border p-2 rounded-md text-center"
       />
+
       <button
         onClick={verificarRespuesta}
         disabled={intentos === 0 || puntuacion >= 100}
@@ -147,9 +215,20 @@ export default function CompletacionGame() {
       >
         Verificar
       </button>
-      <p className="text-red-500">{mensaje}</p>
+
+      <p className={mensaje.includes("❌") ? "text-red-500" : "text-green-500"}>{mensaje}</p>
+
+      {/* Barra de progreso */}
+      <div className="w-full max-w-md bg-gray-300 rounded-lg h-6 mt-4">
+        <div
+          className="bg-green-500 h-6 rounded-lg transition-all duration-500"
+          style={{ width: `${(puntuacion / 100) * 100}%` }}
+        ></div>
+      </div>
+
       <p>Puntuación: {puntuacion} / 100</p>
       <p>Intentos restantes: {intentos}</p>
+      {countReload !== null && <p>Reiniciando en {countReload}...</p>}
     </div>
   );
 }

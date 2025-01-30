@@ -1,6 +1,6 @@
 import prisma from '@/lib/prismaClient';
 import { NextResponse } from 'next/server';
-import { GamesArraySchema } from '@/app/models/GamesScheme';
+import { GameSchema } from '@/app/models/GamesScheme';
 
 export async function GET(request: Request) {
   try {
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     }
 
     // Validar con Zod
-    const result = GamesArraySchema.safeParse(game);
+    const result = GameSchema.safeParse(game);
     if (!result.success) {
       return NextResponse.json(
         { message: 'Error de validación', errors: result.error.format() },

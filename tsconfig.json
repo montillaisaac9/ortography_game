@@ -26,5 +26,6 @@
   "exclude": ["node_modules"],
   "rules": {
     "@typescript-eslint/no-unused-vars": "off"
+    
   }
 }
