@@ -1,24 +1,25 @@
+// src/app/pages/auth/login/page.tsx
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { loginSchema } from '../../../models/AuthScheme';
+import { loginSchema } from '@/app/models/AuthScheme';
 import axios from 'axios';
+import { useAuthStore } from '@/app/stores/authStore';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false); // Estado de éxito
+  const [success, setSuccess] = useState(false);
   const router = useRouter();
+  const setUser = useAuthStore((state) => state.setUser);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess(false); // Resetear estado de éxito antes de enviar
+    setSuccess(false);
 
-    // Validación en cliente con Zod
     const validationResult = loginSchema.safeParse({ email, password });
     if (!validationResult.success) {
       setError(validationResult.error.errors[0].message);
@@ -28,24 +29,20 @@ export default function Login() {
     try {
       const { data } = await axios.post('/api/auth/login', {
         email: email.toLowerCase(),
-        password
-      }, {
-        headers: { 'Content-Type': 'application/json' }
+        password,
       });
 
+      // Guardar usuario en el store (y en localStorage automáticamente)
+      setUser(data.user);
+      
       setSuccess(true);
-      router.push('/pages/home'); // Redirige al dashboard o a la página principal
+      router.push('/pages/home');
 
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        // Error de la respuesta HTTP (4xx/5xx)
         setError(error.response?.data?.message || 'Error al iniciar sesión');
-      } else if (error instanceof Error) {
-        // Error general de JavaScript
-        setError(error.message);
       } else {
-        // Error desconocido
-        setError('Ocurrió un error inesperado. Inténtelo de nuevo más tarde.');
+        setError('Ocurrió un error inesperado');
       }
     }
   };
@@ -55,7 +52,6 @@ export default function Login() {
       <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg">
         <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Iniciar sesión</h1>
 
-        {/* Modal de notificación */}
         {(error || success) && (
           <div
             className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
@@ -97,12 +93,6 @@ export default function Login() {
           >
             Iniciar sesión
           </button>
-          <p>
-            ¿No tienes cuenta?{' '}
-            <Link className="text-blue-600" href="/pages/auth/register">
-              Regístrate
-            </Link>
-          </p>
         </form>
       </div>
     </div>

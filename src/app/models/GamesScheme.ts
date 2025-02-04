@@ -4,6 +4,7 @@ export const GameSchema = z.object({
   id: z.number(),
   name: z.string(),
   description: z.string(),
+  rules : z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
