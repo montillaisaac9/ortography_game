@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react";
-import { set } from "zod";
+import axios from 'axios';
 
 // Definición de las palabras
 const palabras = [
@@ -79,17 +79,23 @@ export default function CompletacionGame() {
       setError(false);
       
       try {
-        const res = await fetch('/api/home/games?id=1');
-        if (!res.ok) throw new Error("Error al obtener los detalles del juego");
-
-        const data = await res.json();
-        console.log(data)
+        const { data } = await axios.get('/api/home/games', {
+          params: { id: 1 } // Parámetros de la URL
+        });
+    
+        console.log(data);
         setTitulo(data.game.name || "Título no disponible");
         setDescripcion(data.game.description || "Descripción no disponible");
         setReglas(data.game.rules || "Reglas no disponibles");
+    
       } catch (error) {
-        console.error("Error al obtener detalles:", error);
+        if (axios.isAxiosError(error)) {
+          console.error("Error al obtener detalles:", error.message);
+        } else {
+          console.error("Error inesperado:", error);
+        }
         setError(true);
+    
       } finally {
         setCargando(false);
       }
@@ -121,20 +127,21 @@ export default function CompletacionGame() {
       </div>
     );
   }
-
   const enviarPuntuacion = async (puntos: number): Promise<void> => {
     try {
-      const response = await fetch('/api/home/games/points', {
-        method: 'POST',
+      await axios.post('/api/home/games/points', {
+        gameId: 1,
+        newScore: puntos,
+      }, {
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: 1, newScore: puntos }),
       });
   
-      if (!response.ok) {
-        throw new Error(`Error en la petición: ${response.statusText}`);
-      }
     } catch (error) {
-      console.error("Error al enviar puntuación:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Error al enviar puntuación:", error.message);
+      } else {
+        console.error("Error inesperado:", error);
+      }
     }
   };
 

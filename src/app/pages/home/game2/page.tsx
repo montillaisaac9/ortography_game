@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/app/components/button";
-import { set } from "zod";
-import next from "next";
-
+import axios from 'axios';
 const questions = [
   {
     word: "Bicicreta",
@@ -130,17 +128,23 @@ export default function ChooseCorrectWordGame() {
         setCargando(true);
         setError(false);
         try {
-          const res = await fetch('/api/home/games?id=2');
-          if (!res.ok) throw new Error("Error al obtener los detalles del juego");
-  
-          const data = await res.json();
-          console.log(data)
+          const { data } = await axios.get('/api/home/games', {
+            params: { id: 2 } // Parámetros de la URL
+          });
+      
+          console.log(data);
           setTitulo(data.game.name || "Título no disponible");
           setDescripcion(data.game.description || "Descripción no disponible");
           setReglas(data.game.rules || "Reglas no disponibles");
+      
         } catch (error) {
-          console.error("Error al obtener detalles:", error);
+          if (axios.isAxiosError(error)) {
+            console.error("Error al obtener detalles:", error.message);
+          } else {
+            console.error("Error inesperado:", error);
+          }
           setError(true);
+      
         } finally {
           setCargando(false);
         }
@@ -175,17 +179,19 @@ export default function ChooseCorrectWordGame() {
 
   const enviarPuntuacion = async (puntos: number): Promise<void> => {
     try {
-      const response = await fetch('/api/home/games/points', {
-        method: 'POST',
+      await axios.post('/api/home/games/points', {
+        gameId: 2,
+        newScore: puntos,
+      }, {
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: 2, newScore: puntos }),
       });
-      if (!response.ok) {
-        console.log(response)
-        throw new Error(`Error en la petición: ${response.statusText}`);
-      }
+  
     } catch (error) {
-      console.error("Error al enviar puntuación:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Error al enviar puntuación:", error.message);
+      } else {
+        console.error("Error inesperado:", error);
+      }
     }
   };
   

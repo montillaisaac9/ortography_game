@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { loginSchema } from '../../../models/AuthScheme';
+import axios from 'axios';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -25,23 +26,25 @@ export default function Login() {
     }
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email: email.toLowerCase(), password }),
-        headers: { 'Content-Type': 'application/json' },
+      const { data } = await axios.post('/api/auth/login', {
+        email: email.toLowerCase(),
+        password
+      }, {
+        headers: { 'Content-Type': 'application/json' }
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        setSuccess(true);
-        router.push('/pages/home'); // Redirige al dashboard o a la página principal
+      setSuccess(true);
+      router.push('/pages/home'); // Redirige al dashboard o a la página principal
+
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        // Error de la respuesta HTTP (4xx/5xx)
+        setError(error.response?.data?.message || 'Error al iniciar sesión');
+      } else if (error instanceof Error) {
+        // Error general de JavaScript
+        setError(error.message);
       } else {
-        setError(data.message || 'Error al iniciar sesión');
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || 'Ocurrió un error inesperado. Inténtelo de nuevo más tarde.');
-      } else {
+        // Error desconocido
         setError('Ocurrió un error inesperado. Inténtelo de nuevo más tarde.');
       }
     }
