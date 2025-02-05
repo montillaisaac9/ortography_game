@@ -11,3 +11,4 @@ export const GameSchema = z.object({
 
 export const GamesArraySchema = z.array(GameSchema);
 export type Game = z.infer<typeof GameSchema>;
+

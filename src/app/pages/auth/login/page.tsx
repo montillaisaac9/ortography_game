@@ -1,4 +1,3 @@
-// src/app/pages/auth/login/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -6,10 +5,14 @@ import { useRouter } from 'next/navigation';
 import { loginSchema } from '@/app/models/AuthScheme';
 import axios from 'axios';
 import { useAuthStore } from '@/app/stores/authStore';
+import Image from 'next/image';
+import Link from 'next/link';
+import {EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'; // Importar iconos
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false); // Estado para mostrar u ocultar la contraseña
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const router = useRouter();
@@ -32,12 +35,9 @@ export default function Login() {
         password,
       });
 
-      // Guardar usuario en el store (y en localStorage automáticamente)
       setUser(data.user);
-      
       setSuccess(true);
       router.push('/pages/home');
-
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         setError(error.response?.data?.message || 'Error al iniciar sesión');
@@ -65,6 +65,16 @@ export default function Login() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex justify-center">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={150}
+              height={150}
+              className="rounded-full"
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Correo electrónico
@@ -76,23 +86,46 @@ export default function Login() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
+
+          {/* Campo de contraseña con botón para mostrar/ocultar */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Contraseña
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
+              />
+      <button
+        type="button"
+        className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+        onClick={() => setShowPassword(!showPassword)}
+      >
+        {showPassword ? (
+          <EyeSlashIcon className="w-5 h-5" />
+        ) : (
+          <EyeIcon className="w-5 h-5" />
+        )}
+      </button>
+            </div>
           </div>
+
           <button
             type="submit"
             className="w-full py-2 px-4 text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Iniciar sesión
           </button>
+
+          <p className="text-center">
+            ¿No tienes cuenta?{' '}
+            <Link className="text-blue-600 hover:underline" href="/pages/auth/register">
+              Registrarse
+            </Link>
+          </p>
         </form>
       </div>
     </div>
