@@ -48,10 +48,16 @@ export default function Login() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg">
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Iniciar sesión</h1>
-
+    
+    <div
+      className="flex flex-col items-center justify-center min-h-screen bg-gray-100"
+      style={{
+        backgroundImage: "url('/login.png')",
+        backgroundPosition: 'center',
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
         {(error || success) && (
           <div
             className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
@@ -63,6 +69,12 @@ export default function Login() {
             </p>
           </div>
         )}
+      <div
+        className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg backdrop-blur-sm bg-opacity-90"
+      >
+        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Iniciar sesión</h1>
+
+      
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex justify-center">
@@ -87,7 +99,6 @@ export default function Login() {
             />
           </div>
 
-          {/* Campo de contraseña con botón para mostrar/ocultar */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Contraseña
@@ -99,17 +110,17 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
               />
-      <button
-        type="button"
-        className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-        onClick={() => setShowPassword(!showPassword)}
-      >
-        {showPassword ? (
-          <EyeSlashIcon className="w-5 h-5" />
-        ) : (
-          <EyeIcon className="w-5 h-5" />
-        )}
-      </button>
+              <button
+                type="button"
+                className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="w-5 h-5" />
+                ) : (
+                  <EyeIcon className="w-5 h-5" />
+                )}
+              </button>
             </div>
           </div>
 

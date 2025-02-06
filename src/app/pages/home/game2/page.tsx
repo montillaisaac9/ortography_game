@@ -262,6 +262,7 @@ export default function ChooseCorrectWordGame() {
       {showFeedback && (
         <div className="mt-4  flex flex-col items-center justify-center">
           <Button onClick={nextQuestion} className="mt-2 mb-10 bg-gray-700">Siguiente</Button>
+          
           <p className={mensaje.includes("❌") ? "text-red-500" : "text-green-500"}>{mensaje}</p>
         </div>
       )}

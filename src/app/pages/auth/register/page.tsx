@@ -53,16 +53,30 @@ export default function Register() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg">
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Registro</h1>
-        
+    <div
+      className="flex flex-col items-center justify-center min-h-screen bg-gray-100"
+      style={{
+        backgroundImage: "url('/login.png')",
+        backgroundPosition: 'center',
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
         {(error || success) && (
-          <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${success ? 'bg-green-500' : 'bg-red-500'}`}>
-            <p className="text-white">{success ? 'Registro exitoso.' : error}</p>
+          <div
+            className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+              success ? 'bg-green-500' : 'bg-red-500'
+            }`}
+          >
+            <p className="text-white">
+              {success ? 'Login exitoso.' : error}
+            </p>
           </div>
         )}
-
+      <div
+        className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg backdrop-blur-sm bg-opacity-90"
+      >
+        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Registro</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex justify-center">
             <Image src="/logo.png" alt="Logo" width={150} height={150} className="rounded-full" />
